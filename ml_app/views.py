@@ -346,9 +346,9 @@ def predict_page(request):
                 # for j in range(0, sequence_length):
                 #     heatmap_images.append(plot_heat_map(j, model, video_dataset[i], './', video_file_name_only))
                 if prediction[0] == 1:
-                    output = "REAL"
-                else:
                     output = "FAKE"
+                else:
+                    output = "REAL"
                 print("Prediction : " , prediction[0],"==",output ,"Confidence : " , confidence)
                 print("--- %s seconds ---" % (time.time() - start_time))
             if settings.DEBUG:
