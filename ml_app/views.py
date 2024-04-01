@@ -22,7 +22,8 @@ from PIL import Image as pImage
 import time
 from django.conf import settings
 from .forms import VideoUploadForm
-
+import random
+# values = ['REAL', 'FAKE']
 index_template_name = 'index.html'
 predict_template_name = 'predict.html'
 
@@ -90,10 +91,6 @@ class validation_dataset(Dataset):
             if(i % a == first_frame):
                 frames.append(self.transform(frame))
         """        
-        # if(len(frames)<self.count):
-        #   for i in range(self.count-len(frames)):
-        #         frames.append(self.transform(frame))
-        #print("no of frames", self.count)
         frames = torch.stack(frames)
         frames = frames[:self.count]
         return frames.unsqueeze(0)
@@ -169,29 +166,29 @@ def plot_heat_map(i, model, img, path = './', video_file_name=''):
 
 # Model Selection
 def get_accurate_model(sequence_length):
-    model_name = []
-    sequence_model = []
-    final_model = ""
-    list_models = glob.glob(os.path.join(settings.PROJECT_DIR, "models", "*.pt"))
-    for i in list_models:
-        model_name.append(i.split("\\")[-1])
-    for i in model_name:
-        try:
-            seq = i.split("_")[3]
-            if (int(seq) == sequence_length):
-                sequence_model.append(i)
-        except:
-            pass
+    # model_name = []
+    # sequence_model = []
+    final_model = "model_89_acc_40_frames_final_data.pt"#model path
+    # list_models = glob.glob(os.path.join(settings.PROJECT_DIR, "models", "*.pt"))
+    # for i in list_models:
+    #     model_name.append(i.split("\\")[-1])
+    # for i in model_name:
+    #     try:
+    #         seq = i.split("_")[3]
+    #         if (int(seq) == sequence_length):
+    #             sequence_model.append(i)
+    #     except:
+    #         pass
 
-    if len(sequence_model) > 1:
-        accuracy = []
-        for i in sequence_model:
-            acc = i.split("_")[1]
-            accuracy.append(acc)
-        max_index = accuracy.index(max(accuracy))
-        final_model = sequence_model[max_index]
-    else:
-        final_model = sequence_model[0]
+    # if len(sequence_model) > 1:
+    #     accuracy = []
+    #     for i in sequence_model:
+    #         acc = i.split("_")[1]
+    #         accuracy.append(acc)
+    #     max_index = accuracy.index(max(accuracy))
+    #     final_model = sequence_model[max_index]
+    # else:
+    #     final_model = sequence_model[0]
     return final_model
 
 ALLOWED_VIDEO_EXTENSIONS = set(['mp4','gif','webm','avi','3gp','wmv','flv','mkv'])
@@ -248,8 +245,8 @@ def index(request):
 
 def predict_page(request):
     if request.method == "GET":
-        if 'file_name' not in request.session:
-            return redirect("ml_app:home")
+        # if 'file_name' not in request.session:
+        #     return redirect("ml_appq:home")
         if 'file_name' in request.session:
             video_file = request.session['file_name']
         if 'sequence_length' in request.session:
@@ -342,13 +339,11 @@ def predict_page(request):
                 prediction = predict(model, video_dataset[i], './', video_file_name_only)
                 confidence = round(prediction[1], 1)
                 print("<=== |  Predicition Done | ===>")
-                # print("<=== | Heat map creation started | ===>")
-                # for j in range(0, sequence_length):
-                #     heatmap_images.append(plot_heat_map(j, model, video_dataset[i], './', video_file_name_only))
                 if prediction[0] == 1:
-                    output = "FAKE"
-                else:
                     output = "REAL"
+                else:
+                    output = "FAKE"
+                # output=random.choice(values)
                 print("Prediction : " , prediction[0],"==",output ,"Confidence : " , confidence)
                 print("--- %s seconds ---" % (time.time() - start_time))
             if settings.DEBUG:
